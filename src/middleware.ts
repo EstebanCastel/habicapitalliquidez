@@ -5,7 +5,7 @@ const UUID_REGEX = /^\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 // Rutas de prueba: /123, /test, etc. → saltan HubSpot y asignan grupo aleatorio
 const TEST_PATHS = ['/123', '/test', '/preview'];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // UUID real → reescribir con deal_uuid
