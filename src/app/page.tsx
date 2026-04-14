@@ -1,65 +1,234 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import Link from 'next/link';
+import { buildAssignment, parseHubSpotGroup, randomGroup, type Assignment } from '@/lib/assignment';
+import { trackEvent, trackPage } from '@/components/SegmentAnalytics';
+import styles from './page.module.css';
+
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const dealUuid = searchParams.get('deal_uuid');
+  const channelParam = searchParams.get('channel');
+
+  const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const logWhatsApp = useCallback(async () => {
+    if (channelParam !== 'whatsapp') return;
+    const fullUrl = window.location.href;
+    const params: Record<string, string> = {};
+    searchParams.forEach((value, key) => { params[key] = value; });
+    fetch('/api/sheets/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fullUrl, params }),
+    }).catch((err) => console.error('[Sheets log] Error:', err));
+  }, [channelParam, searchParams]);
+
+  useEffect(() => {
+    async function init() {
+      // Log WhatsApp channel
+      await logWhatsApp();
+
+      let group = null;
+
+      // Try to load from HubSpot if UUID provided
+      if (dealUuid) {
+        try {
+          const res = await fetch(`/api/hubspot?deal_uuid=${dealUuid}`);
+          if (res.ok) {
+            const data = await res.json();
+            group = parseHubSpotGroup(data.abc_test_landing);
+          }
+        } catch (err) {
+          console.error('[HubSpot] Error:', err);
+        }
+      }
+
+      // If no existing group → randomly assign
+      if (!group) {
+        group = randomGroup();
+        // Write assignment to HubSpot if we have a UUID
+        if (dealUuid) {
+          fetch('/api/hubspot/abc-group', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deal_uuid: dealUuid, group }),
+          }).catch((err) => console.error('[ABC group] Error:', err));
+        }
+      }
+
+      const a = buildAssignment(group, dealUuid);
+      setAssignment(a);
+      localStorage.setItem('fakedoor.assignment', JSON.stringify(a));
+      setLoading(false);
+
+      trackPage('page_view_fakedoor', {
+        group,
+        deal_uuid: dealUuid,
+        channel: channelParam,
+        product: a.product,
+      });
+    }
+
+    init();
+  }, [dealUuid, channelParam, logWhatsApp]);
+
+  if (loading) {
+    return (
+      <div className={styles.loadingScreen}>
+        <div className={styles.spinner} />
+      </div>
+    );
+  }
+
+  if (!assignment) return null;
+
+  const isGH = assignment.product === 'garantia_hipotecaria';
+
+  return (
+    <div className={styles.page}>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <div className={styles.logo}>
+            <span className={styles.logoHabi}>Habi</span>
+            <span className={styles.logoCapital}>Capital</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <div className={styles.heroWrapper}>
+        {/* Background image */}
+        <div className={styles.heroBg}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&q=85&auto=format&fit=crop"
+            alt=""
+            className={`${styles.heroImg} animate-fade-in`}
+          />
+          <div className={styles.heroOverlay} />
+        </div>
+
+        {/* Hero content */}
+        <div className={styles.heroContent}>
+          <div className={styles.heroText}>
+            <p className={`${styles.heroEyebrow} animate-slide-up`}>
+              {isGH ? 'Crédito hipotecario' : 'Crédito de consumo'}
+            </p>
+            <h1 className={`${styles.heroTitle} animate-slide-up-d1`}>
+              Tu crédito de vivienda<br />más fácil y seguro
+            </h1>
+            <p className={`${styles.heroSubtitle} animate-slide-up-d2`}>
+              {assignment.tagline}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Offer Card */}
+      <div className={styles.cardSection}>
+        <div className={styles.cardWrapper}>
+          <div className={`${styles.card} animate-card-reveal`}>
+            <div className={styles.cardLeft}>
+              <p className={styles.cardTag}>Alternativa recomendada</p>
+              <h2 className={styles.cardTitle}>{assignment.productLabel}</h2>
+              <p className={styles.cardDesc}>
+                {isGH
+                  ? 'Financiación respaldada por tu inmueble, con plazos amplios y cuotas cómodas.'
+                  : 'Crédito flexible sin hipoteca, ideal para cualquier necesidad.'}
+              </p>
+
+              <div className={styles.cardMeta}>
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Tasa E.A.</span>
+                  <span className={styles.metaValue}>{assignment.rateLabel}</span>
+                </div>
+                <div className={styles.metaDivider} />
+                <div className={styles.metaItem}>
+                  <span className={styles.metaLabel}>Plazo</span>
+                  <span className={styles.metaValue}>{assignment.termLabel}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.cardRight}>
+              <div className={styles.rateBox}>
+                <p className={styles.rateBoxLabel}>Tasa desde</p>
+                <div className={styles.rateBoxValue}>
+                  <span className={styles.rateNumber}>{assignment.rate}</span>
+                  <span className={styles.ratePct}>%</span>
+                </div>
+                <p className={styles.rateBoxSub}>E.A.</p>
+              </div>
+
+              <Link
+                href="/solicitud"
+                className={styles.applyBtn}
+                onClick={() => {
+                  trackEvent('click_button_fakedoor', {
+                    button: 'aplicar',
+                    group: assignment.group,
+                    product: assignment.product,
+                    rate: assignment.rate,
+                    deal_uuid: assignment.dealUuid,
+                  });
+                }}
+              >
+                Aplicar ahora
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Trust indicators */}
+      <div className={styles.trustSection}>
+        <div className={styles.trustGrid}>
+          <div className={`${styles.trustItem} animate-scale-in`}>
+            <div className={styles.trustIcon}>🔒</div>
+            <p className={styles.trustTitle}>100% digital y seguro</p>
+            <p className={styles.trustDesc}>
+              Tus datos se protegen con los más altos estándares de seguridad bancaria.
+            </p>
+          </div>
+          <div className={`${styles.trustItem} animate-scale-in-d1`}>
+            <div className={styles.trustIcon}>⚡</div>
+            <p className={styles.trustTitle}>Respuesta en minutos</p>
+            <p className={styles.trustDesc}>
+              Sin filas ni papeleos. Aprobación en línea con desembolso en 10 días.
+            </p>
+          </div>
+          <div className={`${styles.trustItem} animate-scale-in-d2`}>
+            <div className={styles.trustIcon}>🏠</div>
+            <p className={styles.trustTitle}>Tasa aprobada, tasa desembolsada</p>
+            <p className={styles.trustDesc}>
+              Transparencia total: la tasa que aprobamos es la que recibes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <p>© 2024 HabiCapital. Todos los derechos reservados.</p>
+      </footer>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Suspense fallback={
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#00875A', animation: 'spin 1s linear infinite' }} />
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

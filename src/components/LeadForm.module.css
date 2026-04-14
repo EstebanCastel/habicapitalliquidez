@@ -1,0 +1,132 @@
+.form {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+.productBadge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--green-light);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+}
+
+.productBadgeLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-dark);
+}
+
+.productBadgeRate {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-primary);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.labelText {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.input {
+  width: 100%;
+  background: var(--gray-100);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 14px;
+  color: var(--gray-900);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.input::placeholder {
+  color: var(--gray-400);
+}
+
+.input:focus {
+  background: var(--white);
+  border-color: var(--green-primary);
+}
+
+.errorBox {
+  background: var(--red-50);
+  color: var(--red-600);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.disclaimer {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--gray-400);
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submitBtn {
+  background: var(--green-primary);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 135, 90, 0.28);
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--green-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 135, 90, 0.36);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .form {
+    padding: 24px;
+  }
+
+  .productBadge {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}

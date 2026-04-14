@@ -1,0 +1,114 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-50);
+}
+
+.header {
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.headerInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 32px;
+}
+
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.logoHabi {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green-primary);
+  letter-spacing: -0.5px;
+}
+
+.logoCapital {
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--gray-700);
+  letter-spacing: -0.5px;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 48px 32px;
+}
+
+.grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.left {
+  padding-top: 8px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--green-primary);
+  margin-bottom: 14px;
+}
+
+.title {
+  font-size: clamp(32px, 3.5vw, 44px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--gray-500);
+  max-width: 340px;
+  margin-bottom: 28px;
+}
+
+.trustPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-dark);
+  background: var(--green-light);
+  padding: 6px 14px;
+  border-radius: 100px;
+}
+
+.right {}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .content {
+    padding: 32px 20px;
+    align-items: flex-start;
+  }
+}
