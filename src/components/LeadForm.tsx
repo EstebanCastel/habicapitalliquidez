@@ -61,6 +61,7 @@ export function LeadForm() {
       rate: assignment?.rate,
       termMonths: assignment?.termMonths,
       dealUuid: assignment?.dealUuid,
+      url: typeof window !== 'undefined' ? window.location.href : '',
     };
 
     try {

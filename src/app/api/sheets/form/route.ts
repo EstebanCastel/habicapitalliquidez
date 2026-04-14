@@ -20,11 +20,24 @@ function getAuth() {
   });
 }
 
-// Writes form submissions to Sheet 1 (Hoja 1) of the spreadsheet
+// Columnas en Hoja 1 — orden definido por el usuario
+const COLUMNS = [
+  'timestamp',
+  'url',
+  'uuid',
+  'nombre_completo',
+  'telefono',
+  'cedula',
+  'grupo',
+  'producto',
+  'tasa',
+  'plazo_meses',
+];
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, document, phone, group, product, rate, termMonths, dealUuid } = body;
+    const { fullName, document, phone, group, product, rate, termMonths, dealUuid, url } = body;
 
     if (!fullName || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -32,19 +45,25 @@ export async function POST(request: NextRequest) {
 
     const sheetId = process.env.GOOGLE_SHEETS_ID;
     if (!sheetId) {
-      console.warn('GOOGLE_SHEETS_ID not configured');
-      return NextResponse.json({ success: true, sheets: false });
+      console.error('[Sheets] GOOGLE_SHEETS_ID not configured');
+      return NextResponse.json({ success: false, error: 'Sheets not configured' }, { status: 503 });
     }
 
-    const auth = getAuth();
+    let auth;
+    try {
+      auth = getAuth();
+    } catch (e) {
+      console.error('[Sheets] Auth error:', e);
+      return NextResponse.json({ success: false, error: 'Sheets auth failed' }, { status: 503 });
+    }
+
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Use sheet index 0 (Hoja 1 - the blank first sheet)
-    // We use a named range approach: get sheet name from spreadsheet metadata
+    // Obtener nombre de la primera hoja
     const metaRes = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
     const sheetTitle = metaRes.data.sheets?.[0]?.properties?.title || 'Hoja 1';
 
-    // Read existing headers from row 1
+    // Leer headers existentes
     let existingHeaders: string[] = [];
     try {
       const headerRes = await sheets.spreadsheets.values.get({
@@ -53,22 +72,10 @@ export async function POST(request: NextRequest) {
       });
       existingHeaders = (headerRes.data.values?.[0] as string[]) || [];
     } catch {
-      // Empty sheet
+      // Hoja vacía
     }
 
-    const COLUMNS = [
-      'timestamp',
-      'nombre_completo',
-      'cedula',
-      'telefono',
-      'grupo',
-      'producto',
-      'tasa',
-      'plazo_meses',
-      'deal_uuid',
-    ];
-
-    // Write headers if sheet is empty
+    // Escribir headers si la hoja está vacía
     if (existingHeaders.length === 0) {
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
@@ -80,14 +87,15 @@ export async function POST(request: NextRequest) {
 
     const row = [
       new Date().toISOString(),
+      url || '',
+      dealUuid || '',
       fullName || '',
-      document || '',
       phone || '',
+      document || '',
       group || '',
       product || '',
       rate?.toString() || '',
       termMonths?.toString() || '',
-      dealUuid || '',
     ];
 
     await sheets.spreadsheets.values.append({
@@ -98,12 +106,11 @@ export async function POST(request: NextRequest) {
       requestBody: { values: [row] },
     });
 
-    console.log(`[Form Fakedoor] Saved: ${fullName} | group=${group}`);
+    console.log(`[Form Fakedoor] Guardado: ${fullName} | uuid=${dealUuid} | grupo=${group} | url=${url}`);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error writing form to Google Sheets:', error);
-    // Don't block the user
-    return NextResponse.json({ success: true, sheets: false });
+    console.error('[Sheets] Error escribiendo formulario:', error);
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }
