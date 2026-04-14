@@ -30,6 +30,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const dealUuid = searchParams.get('deal_uuid');
   const channelParam = searchParams.get('channel');
+  const forceGroup = searchParams.get('force_group')?.toUpperCase() as import('@/lib/assignment').TestGroup | null;
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,29 +65,32 @@ function HomeContent() {
     async function init() {
       await logWhatsApp();
 
-      let group = null;
+      let group: import('@/lib/assignment').TestGroup | null = null;
 
-      try {
-        const res = await fetch(`/api/hubspot?deal_uuid=${dealUuid}`);
-        if (res.ok) {
-          const data = await res.json();
-          group = parseHubSpotGroup(data.abc_test_landing);
-        } else if (res.status === 404) {
-          // Deal not found in HubSpot → block access
-          setHubspotFailed(true);
-          setLoading(false);
-          return;
-        } else {
-          // Unexpected server error → block access
+      // force_group (rutas de prueba) → saltar HubSpot completamente
+      if (forceGroup) {
+        group = forceGroup;
+      } else {
+        try {
+          const res = await fetch(`/api/hubspot?deal_uuid=${dealUuid}`);
+          if (res.ok) {
+            const data = await res.json();
+            group = parseHubSpotGroup(data.abc_test_landing);
+          } else if (res.status === 404) {
+            setHubspotFailed(true);
+            setLoading(false);
+            return;
+          } else {
+            setHubspotFailed(true);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error('[HubSpot] Error:', err);
           setHubspotFailed(true);
           setLoading(false);
           return;
         }
-      } catch (err) {
-        console.error('[HubSpot] Error:', err);
-        setHubspotFailed(true);
-        setLoading(false);
-        return;
       }
 
       // No group assigned yet → assign randomly and write back to HubSpot
@@ -109,11 +113,12 @@ function HomeContent() {
         deal_uuid: dealUuid,
         channel: channelParam,
         product: a.product,
+        is_test: !!forceGroup,
       });
     }
 
     init();
-  }, [dealUuid, channelParam, logWhatsApp]);
+  }, [dealUuid, channelParam, forceGroup, logWhatsApp]);
 
   if (loading) {
     return (
