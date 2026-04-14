@@ -101,9 +101,6 @@ export default function GraciasPage() {
             </div>
           </div>
 
-          <Link href="/" className={styles.backLink}>
-            ← Volver al inicio
-          </Link>
         </div>
       </div>
     </div>
