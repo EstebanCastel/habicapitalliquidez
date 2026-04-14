@@ -16,25 +16,10 @@
   padding: 16px 32px;
 }
 
-.logo {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-  text-decoration: none;
-}
-
-.logoHabi {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--green-primary);
-  letter-spacing: -0.5px;
-}
-
-.logoCapital {
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--gray-700);
-  letter-spacing: -0.5px;
+.logoImg {
+  height: 32px;
+  width: auto;
+  display: block;
 }
 
 .content {

@@ -7,9 +7,9 @@ export default function SolicitudPage() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <a href="/" className={styles.logo}>
-            <span className={styles.logoHabi}>Habi</span>
-            <span className={styles.logoCapital}>Capital</span>
+          <a href="/">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
           </a>
         </div>
       </header>

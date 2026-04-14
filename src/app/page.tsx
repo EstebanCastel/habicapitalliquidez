@@ -94,10 +94,8 @@ function HomeContent() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <div className={styles.logo}>
-            <span className={styles.logoHabi}>Habi</span>
-            <span className={styles.logoCapital}>Capital</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
         </div>
       </header>
 

@@ -29,9 +29,9 @@ export default function GraciasPage() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/" className={styles.logo}>
-            <span className={styles.logoHabi}>Habi</span>
-            <span className={styles.logoCapital}>Capital</span>
+          <Link href="/">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
           </Link>
         </div>
       </header>
