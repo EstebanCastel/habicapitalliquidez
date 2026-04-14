@@ -338,22 +338,10 @@
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
 }
 
-.invalidIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: #fff7ed;
-  color: #ea580c;
-  margin: 0 auto 24px;
-}
-
 .invalidLogo {
-  height: 28px;
+  height: 48px;
   width: auto;
-  margin: 0 auto 28px;
+  margin: 0 auto 32px;
 }
 
 .invalidTitle {
