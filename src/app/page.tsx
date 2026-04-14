@@ -219,7 +219,7 @@ function HomeContent() {
               </div>
 
               <Link
-                href="/solicitud"
+                href={`/solicitud${dealUuid ? `?deal_uuid=${dealUuid}` : ''}`}
                 className={styles.applyBtn}
                 onClick={() => {
                   trackEvent('click_button_fakedoor', {

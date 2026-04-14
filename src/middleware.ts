@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const UUID_REGEX = /^\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
 
+// Rutas propias de la app que NO deben ser reescritas
+const APP_ROUTES = new Set(['/solicitud', '/gracias', '/test', '/preview']);
+
+// Extensiones de archivos estáticos que NO deben ser reescritas
+const STATIC_EXT = /\.(png|ico|jpg|jpeg|svg|webp|gif|css|js|json|txt|xml|woff|woff2|ttf)$/i;
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Cualquier ruta con un segmento (UUID real o slug de prueba) → reescribir a /
-  // El cliente lee el pathname directamente con usePathname(), así que solo
-  // necesitamos asegurarnos de que la página / se sirva para cualquier slug
+  // Ignorar rutas de la app, archivos estáticos y rutas de sistema
+  if (APP_ROUTES.has(pathname) || STATIC_EXT.test(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Cualquier otro segmento único → reescribir a / (UUID real o slug de deal)
   const singleSegment = /^\/([^/]+)$/.test(pathname);
   if (singleSegment) {
     const url = request.nextUrl.clone();
