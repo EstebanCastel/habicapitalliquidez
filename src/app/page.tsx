@@ -9,7 +9,8 @@ import { trackEvent, trackPage } from '@/components/SegmentAnalytics';
 import styles from './page.module.css';
 
 const UUID_REGEX = /^\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
-const TEST_PATHS: Record<string, TestGroup> = { '123': 'AH', 'test': 'AH', 'preview': 'AH' };
+// Slugs de prueba locales que saltan HubSpot (solo para dev sin deals reales)
+const LOCAL_TEST_SLUGS: Record<string, TestGroup> = { 'test': 'AH', 'preview': 'BH' };
 
 function InvalidAccess() {
   return (
@@ -33,20 +34,18 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // Resolve deal_uuid: from query param OR from pathname (for UUID routes and test routes)
+  // Resolve deal_uuid: from query param OR from pathname
   const dealUuidFromQuery = searchParams.get('deal_uuid')?.trim() ?? null;
   const uuidPathMatch = pathname.match(UUID_REGEX);
   const dealUuidFromPath = uuidPathMatch ? uuidPathMatch[1] : null;
-  // Test paths like /123 → extract slug from pathname
+  // Any single-segment path → use as deal_uuid (real UUID or slug like /123)
   const pathSlug = pathname !== '/' ? pathname.slice(1) : null;
-  const isTestPath = pathSlug ? pathSlug in TEST_PATHS : false;
-  const dealUuidFromTestPath = isTestPath ? pathSlug : null;
-  const dealUuid = dealUuidFromQuery || dealUuidFromPath || dealUuidFromTestPath;
+  const dealUuid = dealUuidFromQuery || dealUuidFromPath || pathSlug;
 
   const channelParam = searchParams.get('channel');
-  // force_group: from query param OR derived from known test path
+  // force_group: solo para slugs de prueba locales que no existen en HubSpot
   const forceGroupParam = searchParams.get('force_group')?.toUpperCase() as TestGroup | null;
-  const forceGroup: TestGroup | null = forceGroupParam ?? (pathSlug && TEST_PATHS[pathSlug] ? TEST_PATHS[pathSlug] : null);
+  const forceGroup: TestGroup | null = forceGroupParam ?? (pathSlug && LOCAL_TEST_SLUGS[pathSlug] ? LOCAL_TEST_SLUGS[pathSlug] : null);
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
