@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const VALID_GROUPS = ['A', 'AH', 'BH', 'CH'];
+const VALID_GROUPS = ['AH', 'BH', 'CH', 'DH'];
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,4 +1,4 @@
-export type TestGroup = 'A' | 'AH' | 'BH' | 'CH';
+export type TestGroup = 'AH' | 'BH' | 'CH' | 'DH';
 
 export interface Assignment {
   group: TestGroup;
@@ -12,14 +12,14 @@ export interface Assignment {
   dealUuid: string | null;
 }
 
-const GROUPS: TestGroup[] = ['A', 'AH', 'BH', 'CH'];
+const GROUPS: TestGroup[] = ['AH', 'BH', 'CH', 'DH'];
 
 export function randomGroup(): TestGroup {
   return GROUPS[Math.floor(Math.random() * GROUPS.length)];
 }
 
 export function buildAssignment(group: TestGroup, dealUuid: string | null): Assignment {
-  if (group === 'A') {
+  if (group === 'AH') {
     return {
       group,
       product: 'libre_inversion',
@@ -33,8 +33,8 @@ export function buildAssignment(group: TestGroup, dealUuid: string | null): Assi
     };
   }
 
-  const rates: Record<'AH' | 'BH' | 'CH', number> = { AH: 18, BH: 20, CH: 22 };
-  const rate = rates[group as 'AH' | 'BH' | 'CH'];
+  const rates: Record<'BH' | 'CH' | 'DH', number> = { BH: 18, CH: 20, DH: 22 };
+  const rate = rates[group as 'BH' | 'CH' | 'DH'];
 
   return {
     group,
@@ -52,6 +52,6 @@ export function buildAssignment(group: TestGroup, dealUuid: string | null): Assi
 export function parseHubSpotGroup(value: string | null | undefined): TestGroup | null {
   if (!value) return null;
   const v = value.trim().toUpperCase();
-  if (v === 'A' || v === 'AH' || v === 'BH' || v === 'CH') return v as TestGroup;
+  if (v === 'AH' || v === 'BH' || v === 'CH' || v === 'DH') return v as TestGroup;
   return null;
 }
