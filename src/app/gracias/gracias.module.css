@@ -151,9 +151,15 @@
 }
 
 .infoIcon {
-  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--green-light);
+  color: var(--green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .infoTitle {

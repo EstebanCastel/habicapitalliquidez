@@ -76,14 +76,24 @@ export default function GraciasPage() {
 
           <div className={`${styles.infoCards} animate-scale-in`}>
             <div className={styles.infoCard}>
-              <span className={styles.infoIcon}>📞</span>
+              <span className={styles.infoIcon}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.08 1.18 2 2 0 012.08 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.11 7.91a16 16 0 006.97 6.97l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+                </svg>
+              </span>
               <div>
                 <p className={styles.infoTitle}>Te llamaremos pronto</p>
                 <p className={styles.infoDesc}>Un asesor experto se comunicará contigo en las próximas horas.</p>
               </div>
             </div>
             <div className={styles.infoCard}>
-              <span className={styles.infoIcon}>🏠</span>
+              <span className={styles.infoIcon}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              </span>
               <div>
                 <p className={styles.infoTitle}>100% digital</p>
                 <p className={styles.infoDesc}>Todo el proceso desde la comodidad de tu casa, sin filas ni papeleos.</p>

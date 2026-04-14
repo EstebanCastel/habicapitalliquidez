@@ -190,21 +190,34 @@ function HomeContent() {
       <div className={styles.trustSection}>
         <div className={styles.trustGrid}>
           <div className={`${styles.trustItem} animate-scale-in`}>
-            <div className={styles.trustIcon}>🔒</div>
+            <div className={styles.trustIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            </div>
             <p className={styles.trustTitle}>100% digital y seguro</p>
             <p className={styles.trustDesc}>
               Tus datos se protegen con los más altos estándares de seguridad bancaria.
             </p>
           </div>
           <div className={`${styles.trustItem} animate-scale-in-d1`}>
-            <div className={styles.trustIcon}>⚡</div>
+            <div className={styles.trustIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </div>
             <p className={styles.trustTitle}>Respuesta en minutos</p>
             <p className={styles.trustDesc}>
               Sin filas ni papeleos. Aprobación en línea con desembolso en 10 días.
             </p>
           </div>
           <div className={`${styles.trustItem} animate-scale-in-d2`}>
-            <div className={styles.trustIcon}>🏠</div>
+            <div className={styles.trustIcon}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
             <p className={styles.trustTitle}>Tasa aprobada, tasa desembolsada</p>
             <p className={styles.trustDesc}>
               Transparencia total: la tasa que aprobamos es la que recibes.

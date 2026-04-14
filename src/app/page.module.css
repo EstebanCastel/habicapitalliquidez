@@ -72,9 +72,9 @@
   inset: 0;
   background: linear-gradient(
     105deg,
-    rgba(0, 60, 40, 0.82) 0%,
-    rgba(0, 60, 40, 0.55) 55%,
-    rgba(0, 60, 40, 0.20) 100%
+    rgba(45, 13, 100, 0.82) 0%,
+    rgba(45, 13, 100, 0.55) 55%,
+    rgba(45, 13, 100, 0.18) 100%
   );
 }
 
@@ -291,8 +291,16 @@
 .trustItem {}
 
 .trustIcon {
-  font-size: 22px;
-  margin-bottom: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--green-light);
+  color: var(--green-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .trustTitle {
