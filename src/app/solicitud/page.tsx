@@ -27,8 +27,19 @@ export default function SolicitudPage() {
             </p>
 
             <div className={`${styles.trustPills} animate-slide-up-d3`}>
-              <div className={styles.pill}>🔒 Datos protegidos</div>
-              <div className={styles.pill}>⚡ Respuesta rápida</div>
+              <div className={styles.pill}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Datos protegidos
+              </div>
+              <div className={styles.pill}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                Respuesta rápida
+              </div>
             </div>
           </div>
 
