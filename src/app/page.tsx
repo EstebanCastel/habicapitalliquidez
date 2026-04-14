@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { buildAssignment, parseHubSpotGroup, randomGroup, type Assignment } from '@/lib/assignment';
+import { buildAssignment, parseHubSpotGroup, randomGroup, type Assignment, type TestGroup } from '@/lib/assignment';
 import { trackEvent, trackPage } from '@/components/SegmentAnalytics';
 import styles from './page.module.css';
+
+const UUID_REGEX = /^\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+const TEST_PATHS: Record<string, TestGroup> = { '123': 'AH', 'test': 'AH', 'preview': 'AH' };
 
 function InvalidAccess() {
   return (
@@ -28,9 +31,22 @@ function InvalidAccess() {
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const dealUuid = searchParams.get('deal_uuid');
+  const pathname = usePathname();
+
+  // Resolve deal_uuid: from query param OR from pathname (for UUID routes and test routes)
+  const dealUuidFromQuery = searchParams.get('deal_uuid')?.trim() ?? null;
+  const uuidPathMatch = pathname.match(UUID_REGEX);
+  const dealUuidFromPath = uuidPathMatch ? uuidPathMatch[1] : null;
+  // Test paths like /123 → extract slug from pathname
+  const pathSlug = pathname !== '/' ? pathname.slice(1) : null;
+  const isTestPath = pathSlug ? pathSlug in TEST_PATHS : false;
+  const dealUuidFromTestPath = isTestPath ? pathSlug : null;
+  const dealUuid = dealUuidFromQuery || dealUuidFromPath || dealUuidFromTestPath;
+
   const channelParam = searchParams.get('channel');
-  const forceGroup = searchParams.get('force_group')?.toUpperCase() as import('@/lib/assignment').TestGroup | null;
+  // force_group: from query param OR derived from known test path
+  const forceGroupParam = searchParams.get('force_group')?.toUpperCase() as TestGroup | null;
+  const forceGroup: TestGroup | null = forceGroupParam ?? (pathSlug && TEST_PATHS[pathSlug] ? TEST_PATHS[pathSlug] : null);
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
