@@ -41,6 +41,13 @@ function HomeContent() {
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
   const [hubspotFailed, setHubspotFailed] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const logWhatsApp = useCallback(async () => {
     if (channelParam !== 'whatsapp') return;
@@ -135,7 +142,7 @@ function HomeContent() {
   return (
     <div className={styles.page}>
       {/* Header */}
-      <header className={styles.header}>
+      <header className={`${styles.header} ${scrolled ? styles.headerScrolled : ''}`}>
         <div className={styles.headerInner}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
