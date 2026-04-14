@@ -5,10 +5,6 @@ import { SegmentAnalytics } from '@/components/SegmentAnalytics';
 export const metadata: Metadata = {
   title: 'HabiCapital – Crédito para tu vivienda',
   description: 'Conoce las alternativas de crédito disponibles para ti en HabiCapital.',
-  icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
