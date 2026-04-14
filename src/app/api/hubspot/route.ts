@@ -17,7 +17,7 @@ async function searchDealByUuid(dealUuid: string, apiKey: string) {
           value: dealUuid,
         }],
       }],
-      properties: ['deal_uuid', 'abc_test_landing'],
+      properties: ['deal_uuid', 'ab_test_landing'],
       limit: 1,
     }),
     signal: AbortSignal.timeout(10000),
@@ -54,6 +54,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     nid: deal.id,
-    abc_test_landing: deal.properties.abc_test_landing || null,
+    ab_test_landing: deal.properties.ab_test_landing || null,
   });
 }

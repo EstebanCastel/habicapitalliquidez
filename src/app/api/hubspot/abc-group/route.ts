@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     const dealId = searchData.results[0].id;
 
-    // PATCH abc_test_landing property
+    // PATCH ab_test_landing property
     const patchRes = await fetch(`https://api.hubapi.com/crm/v3/objects/deals/${dealId}`, {
       method: 'PATCH',
       headers: {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        properties: { abc_test_landing: group },
+        properties: { ab_test_landing: group },
       }),
       signal: AbortSignal.timeout(10000),
     });

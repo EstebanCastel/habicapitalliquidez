@@ -84,7 +84,7 @@ function HomeContent() {
           const res = await fetch(`/api/hubspot?deal_uuid=${dealUuid}`);
           if (res.ok) {
             const data = await res.json();
-            group = parseHubSpotGroup(data.abc_test_landing);
+            group = parseHubSpotGroup(data.ab_test_landing);
           } else if (res.status === 404) {
             setHubspotFailed(true);
             setLoading(false);
