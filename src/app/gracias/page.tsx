@@ -9,6 +9,7 @@ import styles from './gracias.module.css';
 export default function GraciasPage() {
   const [firstName, setFirstName] = useState('');
   const [assignment, setAssignment] = useState<Assignment | null>(null);
+  const [homeHref, setHomeHref] = useState('/');
 
   useEffect(() => {
     const lead = localStorage.getItem('fakedoor.lead');
@@ -19,7 +20,11 @@ export default function GraciasPage() {
     }
 
     const stored = localStorage.getItem('fakedoor.assignment');
-    if (stored) setAssignment(JSON.parse(stored));
+    if (stored) {
+      const a: Assignment = JSON.parse(stored);
+      setAssignment(a);
+      if (a.dealUuid) setHomeHref(`/${a.dealUuid}`);
+    }
 
     trackPage('page_view_fakedoor', { page: 'gracias' });
   }, []);
@@ -29,10 +34,10 @@ export default function GraciasPage() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/">
+          <a href={homeHref}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
-          </Link>
+          </a>
         </div>
       </header>
 

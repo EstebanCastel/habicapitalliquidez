@@ -1,13 +1,29 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { LeadForm } from '@/components/LeadForm';
+import type { Assignment } from '@/lib/assignment';
 import styles from './solicitud.module.css';
 
 export default function SolicitudPage() {
+  const [homeHref, setHomeHref] = useState('/');
+
+  useEffect(() => {
+    const stored = localStorage.getItem('fakedoor.assignment');
+    if (stored) {
+      const assignment: Assignment = JSON.parse(stored);
+      if (assignment.dealUuid) {
+        setHomeHref(`/${assignment.dealUuid}`);
+      }
+    }
+  }, []);
+
   return (
     <div className={styles.page}>
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <a href="/">
+          <a href={homeHref}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
           </a>
