@@ -311,6 +311,65 @@
   color: var(--gray-400);
 }
 
+/* Invalid access */
+.invalidPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-50);
+  padding: 24px;
+}
+
+.invalidCard {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 52px 44px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+}
+
+.invalidIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #fff7ed;
+  color: #ea580c;
+  margin: 0 auto 24px;
+}
+
+.invalidLogo {
+  height: 28px;
+  width: auto;
+  margin: 0 auto 28px;
+}
+
+.invalidTitle {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--gray-900);
+  margin-bottom: 14px;
+}
+
+.invalidText {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--gray-500);
+  margin-bottom: 12px;
+}
+
+.invalidHint {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--gray-400);
+}
+
 /* Loading */
 .loadingScreen {
   display: flex;

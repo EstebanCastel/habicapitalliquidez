@@ -8,6 +8,31 @@ import { buildAssignment, parseHubSpotGroup, randomGroup, type Assignment } from
 import { trackEvent, trackPage } from '@/components/SegmentAnalytics';
 import styles from './page.module.css';
 
+function InvalidAccess() {
+  return (
+    <div className={styles.invalidPage}>
+      <div className={styles.invalidCard}>
+        <div className={styles.invalidIcon}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.invalidLogo} />
+        <h1 className={styles.invalidTitle}>Acceso no válido</h1>
+        <p className={styles.invalidText}>
+          Para acceder a tu propuesta personalizada, necesitas el enlace único que tu asesor de HabiCapital te envió.
+        </p>
+        <p className={styles.invalidHint}>
+          Si ya tienes un enlace, por favor ábrelo directamente para ver tu oferta de crédito.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function HomeContent() {
   const searchParams = useSearchParams();
   const dealUuid = searchParams.get('deal_uuid');
@@ -15,6 +40,7 @@ function HomeContent() {
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hubspotFailed, setHubspotFailed] = useState(false);
 
   const logWhatsApp = useCallback(async () => {
     if (channelParam !== 'whatsapp') return;
@@ -29,36 +55,48 @@ function HomeContent() {
   }, [channelParam, searchParams]);
 
   useEffect(() => {
+    // No UUID → block immediately, no loading
+    if (!dealUuid) {
+      setLoading(false);
+      return;
+    }
+
     async function init() {
-      // Log WhatsApp channel
       await logWhatsApp();
 
       let group = null;
 
-      // Try to load from HubSpot if UUID provided
-      if (dealUuid) {
-        try {
-          const res = await fetch(`/api/hubspot?deal_uuid=${dealUuid}`);
-          if (res.ok) {
-            const data = await res.json();
-            group = parseHubSpotGroup(data.abc_test_landing);
-          }
-        } catch (err) {
-          console.error('[HubSpot] Error:', err);
+      try {
+        const res = await fetch(`/api/hubspot?deal_uuid=${dealUuid}`);
+        if (res.ok) {
+          const data = await res.json();
+          group = parseHubSpotGroup(data.abc_test_landing);
+        } else if (res.status === 404) {
+          // Deal not found in HubSpot → block access
+          setHubspotFailed(true);
+          setLoading(false);
+          return;
+        } else {
+          // Unexpected server error → block access
+          setHubspotFailed(true);
+          setLoading(false);
+          return;
         }
+      } catch (err) {
+        console.error('[HubSpot] Error:', err);
+        setHubspotFailed(true);
+        setLoading(false);
+        return;
       }
 
-      // If no existing group → randomly assign
+      // No group assigned yet → assign randomly and write back to HubSpot
       if (!group) {
         group = randomGroup();
-        // Write assignment to HubSpot if we have a UUID
-        if (dealUuid) {
-          fetch('/api/hubspot/abc-group', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ deal_uuid: dealUuid, group }),
-          }).catch((err) => console.error('[ABC group] Error:', err));
-        }
+        fetch('/api/hubspot/abc-group', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deal_uuid: dealUuid, group }),
+        }).catch((err) => console.error('[ABC group] Error:', err));
       }
 
       const a = buildAssignment(group, dealUuid);
@@ -85,6 +123,11 @@ function HomeContent() {
     );
   }
 
+  // No UUID or HubSpot failed → show invalid access screen
+  if (!dealUuid || hubspotFailed) {
+    return <InvalidAccess />;
+  }
+
   if (!assignment) return null;
 
   const isGH = assignment.product === 'garantia_hipotecaria';
@@ -101,7 +144,6 @@ function HomeContent() {
 
       {/* Hero */}
       <div className={styles.heroWrapper}>
-        {/* Background image */}
         <div className={styles.heroBg}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -112,7 +154,6 @@ function HomeContent() {
           <div className={styles.heroOverlay} />
         </div>
 
-        {/* Hero content */}
         <div className={styles.heroContent}>
           <div className={styles.heroText}>
             <p className={`${styles.heroEyebrow} animate-slide-up`}>
@@ -236,7 +277,7 @@ export default function Home() {
   return (
     <Suspense fallback={
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#00875A', animation: 'spin 1s linear infinite' }} />
+        <div style={{ width: 40, height: 40, borderRadius: '50%', border: '3px solid #E5E7EB', borderTopColor: '#9709c6', animation: 'spin 1s linear infinite' }} />
       </div>
     }>
       <HomeContent />
