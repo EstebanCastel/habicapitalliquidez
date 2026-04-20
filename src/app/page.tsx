@@ -143,7 +143,8 @@ function HomeContent() {
 
   if (!assignment) return null;
 
-  const isGH = assignment.product === 'garantia_hipotecaria';
+  // Todas las variantes son libre inversión (AH: 84m, BH: 120m)
+  const isGH = false;
 
   return (
     <div className={styles.page}>
