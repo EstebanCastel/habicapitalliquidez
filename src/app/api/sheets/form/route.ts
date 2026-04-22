@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { getDocumentHashes } from '@/lib/document-hashes';
+import type { ClientFingerprint } from '@/lib/fingerprint';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +22,9 @@ function getAuth() {
   });
 }
 
-// Columnas en Hoja 1 — orden definido por el usuario
+// Columnas en Hoja 1 — orden definido por el usuario.
+// Para hojas nuevas se escribe este orden completo. Para hojas existentes,
+// se preservan los headers actuales y se anexan al final las que falten.
 const COLUMNS = [
   'timestamp',
   'url',
@@ -32,15 +36,49 @@ const COLUMNS = [
   'producto',
   'tasa',
   'plazo_meses',
+  'hash_politica_tratamiento_datos',
+  'hash_politica_datos_sensibles',
+  'huella_digital',
 ];
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { fullName, document, phone, group, product, rate, termMonths, dealUuid, url } = body;
+    const {
+      fullName,
+      document,
+      phone,
+      group,
+      product,
+      rate,
+      termMonths,
+      dealUuid,
+      url,
+      acceptedTerms,
+      fingerprint,
+    } = body as {
+      fullName?: string;
+      document?: string;
+      phone?: string;
+      group?: string;
+      product?: string;
+      rate?: number | string;
+      termMonths?: number | string;
+      dealUuid?: string;
+      url?: string;
+      acceptedTerms?: boolean;
+      fingerprint?: Partial<ClientFingerprint>;
+    };
 
     if (!fullName || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    if (acceptedTerms !== true) {
+      return NextResponse.json(
+        { error: 'Debes aceptar los Términos y Condiciones y la Política de Privacidad.' },
+        { status: 400 },
+      );
     }
 
     const sheetId = process.env.GOOGLE_SHEETS_ID;
@@ -57,13 +95,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Sheets auth failed' }, { status: 503 });
     }
 
+    const ipAddress =
+      request.headers.get('x-forwarded-for') ||
+      request.headers.get('x-real-ip') ||
+      '';
+    const requestTime = new Date().toISOString();
+
+    const huella = {
+      device: fingerprint?.device || '',
+      browser: fingerprint?.browser || '',
+      language: fingerprint?.language || '',
+      platform: fingerprint?.platform || '',
+      timezone: fingerprint?.timezone || '',
+      timestamp: fingerprint?.timestamp || '',
+      ip_address: ipAddress,
+      user_agent: fingerprint?.user_agent || request.headers.get('user-agent') || '',
+      request_time: requestTime,
+      screen_resolution: fingerprint?.screen_resolution || '',
+    };
+
+    let hashes;
+    try {
+      hashes = await getDocumentHashes();
+    } catch (e) {
+      console.error('[Sheets] Error calculando hashes de documentos legales:', e);
+      return NextResponse.json(
+        { success: false, error: 'No se pudieron procesar los documentos legales.' },
+        { status: 500 },
+      );
+    }
+
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Obtener nombre de la primera hoja
     const metaRes = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
     const sheetTitle = metaRes.data.sheets?.[0]?.properties?.title || 'Hoja 1';
 
-    // Leer headers existentes
     let existingHeaders: string[] = [];
     try {
       const headerRes = await sheets.spreadsheets.values.get({
@@ -75,28 +141,47 @@ export async function POST(request: NextRequest) {
       // Hoja vacía
     }
 
-    // Escribir headers si la hoja está vacía
+    let finalHeaders: string[];
     if (existingHeaders.length === 0) {
+      finalHeaders = COLUMNS;
       await sheets.spreadsheets.values.update({
         spreadsheetId: sheetId,
         range: `${sheetTitle}!1:1`,
         valueInputOption: 'USER_ENTERED',
-        requestBody: { values: [COLUMNS] },
+        requestBody: { values: [finalHeaders] },
       });
+    } else {
+      const missing = COLUMNS.filter((c) => !existingHeaders.includes(c));
+      if (missing.length > 0) {
+        finalHeaders = [...existingHeaders, ...missing];
+        await sheets.spreadsheets.values.update({
+          spreadsheetId: sheetId,
+          range: `${sheetTitle}!1:1`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: { values: [finalHeaders] },
+        });
+      } else {
+        finalHeaders = existingHeaders;
+      }
     }
 
-    const row = [
-      new Date().toISOString(),
-      url || '',
-      dealUuid || '',
-      fullName || '',
-      phone || '',
-      document || '',
-      group || '',
-      product || '',
-      rate?.toString() || '',
-      termMonths?.toString() || '',
-    ];
+    const rowData: Record<string, string> = {
+      timestamp: requestTime,
+      url: url || '',
+      uuid: dealUuid || '',
+      nombre_completo: fullName || '',
+      telefono: phone || '',
+      cedula: document || '',
+      grupo: group || '',
+      producto: product || '',
+      tasa: rate !== undefined && rate !== null ? String(rate) : '',
+      plazo_meses: termMonths !== undefined && termMonths !== null ? String(termMonths) : '',
+      hash_politica_tratamiento_datos: hashes.politica_tratamiento_datos.hash,
+      hash_politica_datos_sensibles: hashes.politica_datos_sensibles.hash,
+      huella_digital: JSON.stringify(huella),
+    };
+
+    const row = finalHeaders.map((h) => rowData[h] ?? '');
 
     await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
@@ -106,7 +191,9 @@ export async function POST(request: NextRequest) {
       requestBody: { values: [row] },
     });
 
-    console.log(`[Form Fakedoor] Guardado: ${fullName} | uuid=${dealUuid} | grupo=${group} | url=${url}`);
+    console.log(
+      `[Form Fakedoor] Guardado: ${fullName} | uuid=${dealUuid} | grupo=${group} | url=${url} | ip=${ipAddress}`,
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

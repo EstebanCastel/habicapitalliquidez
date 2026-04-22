@@ -4,15 +4,22 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { trackEvent } from '@/components/SegmentAnalytics';
 import type { Assignment } from '@/lib/assignment';
+import { collectClientFingerprint } from '@/lib/fingerprint';
 import styles from './LeadForm.module.css';
 
 interface FormState {
   fullName: string;
   document: string;
   phone: string;
+  acceptedTerms: boolean;
 }
 
-const initialState: FormState = { fullName: '', document: '', phone: '' };
+const initialState: FormState = {
+  fullName: '',
+  document: '',
+  phone: '',
+  acceptedTerms: false,
+};
 
 export function LeadForm() {
   const router = useRouter();
@@ -26,7 +33,7 @@ export function LeadForm() {
     if (stored) setAssignment(JSON.parse(stored));
   }, []);
 
-  function updateField<K extends keyof FormState>(key: K, value: string) {
+  function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((cur) => ({ ...cur, [key]: value }));
   }
 
@@ -34,6 +41,7 @@ export function LeadForm() {
     if (!form.fullName.trim()) return 'Por favor ingresa tu nombre completo.';
     if (!form.document.trim()) return 'Por favor ingresa tu número de cédula.';
     if (form.phone.replace(/\D/g, '').length < 10) return 'Ingresa un número de celular válido (mínimo 10 dígitos).';
+    if (!form.acceptedTerms) return 'Debes aceptar los Términos y Condiciones y la Política de Privacidad para continuar.';
     return '';
   }
 
@@ -52,6 +60,8 @@ export function LeadForm() {
       deal_uuid: assignment?.dealUuid,
     });
 
+    const fingerprint = collectClientFingerprint();
+
     const payload = {
       fullName: form.fullName,
       document: form.document,
@@ -62,6 +72,8 @@ export function LeadForm() {
       termMonths: assignment?.termMonths,
       dealUuid: assignment?.dealUuid,
       url: typeof window !== 'undefined' ? window.location.href : '',
+      acceptedTerms: form.acceptedTerms,
+      fingerprint,
     };
 
     try {
@@ -131,6 +143,36 @@ export function LeadForm() {
           />
         </label>
       </div>
+
+      <label className={styles.consentRow}>
+        <input
+          type="checkbox"
+          className={styles.checkbox}
+          checked={form.acceptedTerms}
+          onChange={(e) => updateField('acceptedTerms', e.target.checked)}
+        />
+        <span className={styles.consentText}>
+          Al autorizar, aceptas nuestros{' '}
+          <a
+            href="/legal/terminos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.consentLink}
+          >
+            Términos y Condiciones
+          </a>{' '}
+          y{' '}
+          <a
+            href="/legal/privacidad"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.consentLink}
+          >
+            Política de Privacidad
+          </a>
+          .
+        </span>
+      </label>
 
       {error && <div className={styles.errorBox}>{error}</div>}
 

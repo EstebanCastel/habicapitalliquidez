@@ -69,6 +69,75 @@
   border-color: var(--green-primary);
 }
 
+.consentRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--gray-100);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.consentRow:hover {
+  background: var(--gray-200);
+}
+
+.checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  border: 1.5px solid var(--gray-400);
+  border-radius: 5px;
+  background: var(--white);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.checkbox:checked {
+  background: var(--green-primary);
+  border-color: var(--green-primary);
+}
+
+.checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox:focus-visible {
+  outline: 2px solid var(--green-primary);
+  outline-offset: 2px;
+}
+
+.consentText {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--gray-700);
+}
+
+.consentLink {
+  color: var(--green-dark);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.consentLink:hover {
+  color: var(--green-primary);
+}
+
 .errorBox {
   background: var(--red-50);
   color: var(--red-600);
