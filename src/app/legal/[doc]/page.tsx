@@ -36,14 +36,6 @@ export default async function LegalDocPage({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/habicapital-logo.png" alt="HabiCapital" className={styles.logoImg} />
           </Link>
-          <a
-            href={meta.file}
-            download
-            className={styles.downloadBtn}
-            aria-label="Descargar documento"
-          >
-            Descargar PDF
-          </a>
         </div>
       </header>
 
@@ -56,17 +48,10 @@ export default async function LegalDocPage({
 
       <div className={styles.viewer}>
         <iframe
-          src={`${meta.file}#view=FitH`}
+          src={`${meta.file}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
           title={meta.title}
           className={styles.frame}
         />
-        <p className={styles.fallback}>
-          ¿No puedes ver el documento?{' '}
-          <a href={meta.file} target="_blank" rel="noopener noreferrer">
-            Ábrelo en una nueva pestaña
-          </a>
-          .
-        </p>
       </div>
     </div>
   );

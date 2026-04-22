@@ -6,7 +6,7 @@ const UUID_REGEX = /^\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 const APP_ROUTES = new Set(['/solicitud', '/gracias', '/test', '/preview']);
 
 // Extensiones de archivos estáticos que NO deben ser reescritas
-const STATIC_EXT = /\.(png|ico|jpg|jpeg|svg|webp|gif|css|js|json|txt|xml|woff|woff2|ttf)$/i;
+const STATIC_EXT = /\.(png|ico|jpg|jpeg|svg|webp|gif|css|js|json|txt|xml|woff|woff2|ttf|pdf)$/i;
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
