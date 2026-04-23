@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { buildAssignment, parseHubSpotGroup, randomGroup, type Assignment, type TestGroup } from '@/lib/assignment';
+import { isPendingConsent } from '@/lib/pending-consent';
 import { trackEvent, trackPage } from '@/components/SegmentAnalytics';
 import styles from './page.module.css';
 
@@ -33,6 +34,7 @@ function InvalidAccess() {
 function HomeContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
 
   // Resolve deal_uuid: from query param OR from pathname
   const dealUuidFromQuery = searchParams.get('deal_uuid')?.trim() ?? null;
@@ -67,6 +69,13 @@ function HomeContent() {
     // No UUID → block immediately, no loading
     if (!dealUuid) {
       setLoading(false);
+      return;
+    }
+
+    // Leads que se registraron antes del flujo de T&C/huella digital:
+    // los enviamos directamente a la pantalla de consentimiento diferido.
+    if (isPendingConsent(dealUuid)) {
+      router.replace(`/consentimiento/${dealUuid}`);
       return;
     }
 
@@ -126,7 +135,7 @@ function HomeContent() {
     }
 
     init();
-  }, [dealUuid, channelParam, forceGroup, logWhatsApp]);
+  }, [dealUuid, channelParam, forceGroup, logWhatsApp, router]);
 
   if (loading) {
     return (

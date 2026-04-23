@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       url,
       acceptedTerms,
       fingerprint,
+      consentMeta,
     } = body as {
       fullName?: string;
       document?: string;
@@ -68,6 +69,11 @@ export async function POST(request: NextRequest) {
       url?: string;
       acceptedTerms?: boolean;
       fingerprint?: Partial<ClientFingerprint>;
+      consentMeta?: {
+        source?: string;
+        originalTimestamp?: string;
+        originalUrl?: string;
+      };
     };
 
     if (!fullName || !phone) {
@@ -101,7 +107,7 @@ export async function POST(request: NextRequest) {
       '';
     const requestTime = new Date().toISOString();
 
-    const huella = {
+    const huella: Record<string, unknown> = {
       device: fingerprint?.device || '',
       browser: fingerprint?.browser || '',
       language: fingerprint?.language || '',
@@ -113,6 +119,12 @@ export async function POST(request: NextRequest) {
       request_time: requestTime,
       screen_resolution: fingerprint?.screen_resolution || '',
     };
+
+    if (consentMeta) {
+      huella.consent_source = consentMeta.source || '';
+      huella.original_timestamp = consentMeta.originalTimestamp || '';
+      huella.original_url = consentMeta.originalUrl || '';
+    }
 
     let hashes;
     try {
