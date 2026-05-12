@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { google } from 'googleapis';
 import { getDocumentHashes } from '@/lib/document-hashes';
 import type { ClientFingerprint } from '@/lib/fingerprint';
+import { scoreLeadAndWrite } from '@/lib/score-lead';
 
 export const dynamic = 'force-dynamic';
+// El engine puede tardar minutos — extendemos la duración disponible para los
+// callbacks de after() en Vercel.
+export const maxDuration = 300; // 5 min
 
 function getAuth() {
   const credsRaw = process.env.GOOGLE_SHEETS_CREDENTIALS;
@@ -206,6 +210,35 @@ export async function POST(request: NextRequest) {
     console.log(
       `[Form Fakedoor] Guardado: ${fullName} | uuid=${dealUuid} | grupo=${group} | url=${url} | ip=${ipAddress}`,
     );
+
+    // Dispara el scoring en background — el usuario ve "Gracias" sin esperar.
+    // Si HC_M2M_CLIENT_ID/SECRET no estan configurados, scoreLeadAndWrite
+    // loguea el error y devuelve; el lead queda con Aplica vacio y se puede
+    // reprocesar manualmente.
+    if (document && fullName && phone) {
+      after(async () => {
+        try {
+          await scoreLeadAndWrite({
+            fullName,
+            phone,
+            document,
+            huella: {
+              device: huella.device as string,
+              browser: huella.browser as string,
+              language: huella.language as string,
+              platform: huella.platform as string,
+              timezone: huella.timezone as string,
+              user_agent: huella.user_agent as string,
+              screen_resolution: huella.screen_resolution as string,
+            },
+            ip: ipAddress,
+            sheetId,
+          });
+        } catch (e) {
+          console.error('[Form Fakedoor] background scoring failed:', e);
+        }
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
