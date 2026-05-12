@@ -313,6 +313,12 @@ export function parseScoreOutcome(
     const n = typeof scoreRaw === 'number' ? scoreRaw : parseInt(String(scoreRaw), 10);
     if (!Number.isNaN(n)) score = n;
   }
+
+  // Si el engine quedó en pending (típicamente income_validation_pending) pero
+  // tenemos score, decide por score. Umbral del producto = 720.
+  if (aplica === 'pending' && score !== null) {
+    aplica = score >= 720 ? 'si' : 'no';
+  }
   const nivel =
     (s.nivel_riesgo as string | undefined) ??
     (detail?.nivel_riesgo as string | undefined) ??
